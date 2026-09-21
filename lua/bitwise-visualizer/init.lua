@@ -351,6 +351,29 @@ function M.render_text(overrides)
   return formatter.to_strings(result.rendered)
 end
 
+--- Copy the plain-text visualisation of the expression under the cursor to a
+--- register, so it can be pasted elsewhere (an issue, a chat, a commit
+--- message). This never touches the buffer, only the register.
+---@param opts table|nil { register = string (default "+"), header = boolean }
+---@return boolean copied, string|nil text_or_reason the copied text on
+---success, or the reason nothing was copied on failure
+function M.copy(opts)
+  opts = opts or {}
+  local lines, why = M.render_text()
+  if not lines then
+    return false, why
+  end
+  if opts.header then
+    local name = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
+    name = name ~= "" and vim.fn.fnamemodify(name, ":.") or "[No Name]"
+    local row = vim.api.nvim_win_get_cursor(0)[1]
+    table.insert(lines, 1, string.format("%s:%d", name, row))
+  end
+  local text = table.concat(lines, "\n")
+  vim.fn.setreg(opts.register or "+", text, "l")
+  return true, text
+end
+
 --- Diagnostic snapshot, mostly for `:checkhealth` and bug reports.
 ---@return table
 function M.status()

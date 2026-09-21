@@ -434,6 +434,8 @@ value that a human reader could disprove.
 | `:BitwiseVisualizerShow` | `.show()` | one-shot visualization at the cursor |
 | `:BitwiseVisualizerShow!` | `.render_text()` | echo it as plain text |
 | `:BitwiseVisualizerHide` | `.hide()` | clear the current buffer |
+| `:BitwiseVisualizerCopy` | `.copy()` | copy the visualization to the `"+` register |
+| `:BitwiseVisualizerCopy!` | `.copy({ header = true })` | copy with a `file:line` header |
 | `:BitwiseVisualizerWidth {auto\|8\|16\|32\|64}` | `.configure({ width = 8 })` | change the width |
 | `:BitwiseVisualizerStatus` | `.status()` | diagnostics |
 | `:BitwiseVisualizerReset` | `require("bitwise-visualizer.config").reset()` | restore defaults |
@@ -445,6 +447,10 @@ manual-only (no automatic cursor-following), set `auto = false` yourself
 (in `setup()` or with `configure({ auto = false })`) and drive it with
 `show()`/`hide()`, which work regardless of `enabled`/`auto`.
 
+`copy()` writes to the `"+` register (override with `.copy({ register = "a" })`);
+pasting into another application needs a system clipboard provider such as
+`xclip`, `wl-clipboard` or `pbcopy` (see `:help clipboard`).
+
 Additional Lua entry points:
 
 ```lua
@@ -455,6 +461,7 @@ bv.configure(patch)                  -- change configuration at runtime and redr
 bv.refresh()                         -- recompute and redraw now
 bv.analyze(buf, row, col, overrides) -- inspect without drawing anything
 bv.render_text()                     -- the visualization as plain strings
+bv.copy(opts)                        -- copy it to a register, { register, header }
 bv.is_enabled()
 bv.status()
 

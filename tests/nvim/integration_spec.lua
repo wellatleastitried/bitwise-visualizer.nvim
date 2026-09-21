@@ -137,6 +137,82 @@ t.describe("integration", function()
     end)
   end)
 
+  t.describe("copy", function()
+    t.it("copies the visualization to the + register", function()
+      h.buffer("c", { "int x = 10 & 12;" })
+      h.cursor_on("&")
+      vim.fn.setreg("+", "")
+      local copied, text = bv.copy()
+      t.eq(true, copied)
+      t.contains(text, "1000")
+      t.contains(text, "(8)")
+      -- Copied linewise, so the register gains a trailing newline.
+      t.eq(text .. "\n", vim.fn.getreg("+"))
+    end)
+
+    t.it("prefixes a file:line header when asked", function()
+      h.buffer("c", { "int x = 10 & 12;" })
+      h.cursor_on("&")
+      local copied, text = bv.copy({ header = true })
+      t.eq(true, copied)
+      t.eq("[No Name]:1", (text:gmatch("[^\n]+")()))
+    end)
+
+    t.it("writes to a custom register", function()
+      h.buffer("c", { "int x = 10 & 12;" })
+      h.cursor_on("&")
+      vim.fn.setreg("a", "")
+      bv.copy({ register = "a" })
+      t.contains(vim.fn.getreg("a"), "(8)")
+    end)
+
+    t.it("fails without clobbering the register when there is nothing to copy", function()
+      h.buffer("c", { "int x = 0;" })
+      h.cursor_on("0")
+      vim.fn.setreg("+", "sentinel")
+      local copied, reason = bv.copy()
+      t.eq(false, copied)
+      t.ok(reason)
+      t.eq("sentinel", vim.fn.getreg("+"))
+    end)
+
+    t.it("BitwiseVisualizerCopy command copies and notifies", function()
+      h.buffer("c", { "int x = 10 & 12;" })
+      h.cursor_on("&")
+      vim.fn.setreg("+", "")
+      local msgs = {}
+      local notify = vim.notify
+      vim.notify = function(msg)
+        msgs[#msgs + 1] = msg
+      end
+      vim.cmd("BitwiseVisualizerCopy")
+      vim.notify = notify
+      t.contains(vim.fn.getreg("+"), "(8)")
+      t.eq(1, #msgs)
+      t.contains(msgs[1], "copied")
+    end)
+
+    t.it("BitwiseVisualizerCopy! adds the header", function()
+      h.buffer("c", { "int x = 10 & 12;" })
+      h.cursor_on("&")
+      vim.cmd("BitwiseVisualizerCopy!")
+      t.contains(vim.fn.getreg("+"), "[No Name]:1")
+    end)
+
+    t.it("BitwiseVisualizerCopy warns when there is nothing to copy", function()
+      h.buffer("c", { "int x = 0;" })
+      h.cursor_on("0")
+      local msgs = {}
+      local notify = vim.notify
+      vim.notify = function(msg)
+        msgs[#msgs + 1] = msg
+      end
+      vim.cmd("BitwiseVisualizerCopy")
+      vim.notify = notify
+      t.eq(1, #msgs)
+    end)
+  end)
+
   t.describe("cursor movement", function()
     t.it("follows the cursor onto another expression", function()
       h.buffer("c", { "int a = 10 & 12;", "int b = 1 | 2;" })
@@ -348,6 +424,7 @@ t.describe("integration", function()
       "BitwiseVisualizerToggle",
       "BitwiseVisualizerShow",
       "BitwiseVisualizerHide",
+      "BitwiseVisualizerCopy",
       "BitwiseVisualizerWidth",
       "BitwiseVisualizerStatus",
       "BitwiseVisualizerReset",
