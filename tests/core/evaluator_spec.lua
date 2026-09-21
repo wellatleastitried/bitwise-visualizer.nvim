@@ -350,6 +350,57 @@ t.describe("evaluator", function()
     end)
   end)
 
+  t.describe("tree metrics", function()
+    t.it("counts a bare literal as a single, depth-1 node", function()
+      local node = lit("10")
+      t.eq(1, evaluator.count_nodes(node))
+      t.eq(1, evaluator.tree_depth(node))
+    end)
+
+    t.it("counts a binary expression and its two operands", function()
+      local node = bin("&", lit("10"), lit("12"))
+      t.eq(3, evaluator.count_nodes(node))
+      t.eq(2, evaluator.tree_depth(node))
+    end)
+
+    t.it("counts a unary expression and its operand", function()
+      local node = un("~", lit("10"))
+      t.eq(2, evaluator.count_nodes(node))
+      t.eq(2, evaluator.tree_depth(node))
+    end)
+
+    t.it("counts a parenthesised node as one extra level", function()
+      local node = { kind = "paren", text = "(10)", inner = lit("10") }
+      t.eq(2, evaluator.count_nodes(node))
+      t.eq(2, evaluator.tree_depth(node))
+    end)
+
+    t.it("takes the deepest branch of an unbalanced tree", function()
+      -- `(10 & 12) ^ 3`: the left branch is 3 nodes deep (paren -> binary ->
+      -- literal), the right branch is a single literal.
+      local inner = { kind = "paren", text = "(10 & 12)", inner = bin("&", lit("10"), lit("12")) }
+      local node = bin("^", inner, lit("3"))
+      t.eq(6, evaluator.count_nodes(node))
+      t.eq(4, evaluator.tree_depth(node))
+    end)
+
+    t.it("grows with each link of a chain", function()
+      local expr = lit("1")
+      for _ = 1, 4 do
+        expr = bin("&", expr, lit("1"))
+      end
+      t.eq(9, evaluator.count_nodes(expr))
+      t.eq(5, evaluator.tree_depth(expr))
+    end)
+
+    t.it("treats a non-table node as empty", function()
+      t.eq(0, evaluator.count_nodes(nil))
+      t.eq(0, evaluator.tree_depth(nil))
+      t.eq(0, evaluator.count_nodes("not a node"))
+      t.eq(0, evaluator.tree_depth("not a node"))
+    end)
+  end)
+
   t.describe("malformed input", function()
     t.it("handles an unparsable literal", function()
       local r = ev(bin("&", { kind = "literal", text = "??", base = 10, digits = "zz" }, lit("1")))

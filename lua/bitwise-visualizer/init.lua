@@ -367,6 +367,13 @@ function M.status()
     expression = result and result.ir.text or nil,
     status = result and result.rendered.status or nil,
     reason = why,
+    metrics = result and {
+      nodes = evaluator.count_nodes(result.ir),
+      max_nodes = config.get().max_nodes,
+      depth = evaluator.tree_depth(result.ir),
+      eval_width = result.rendered.eval_width,
+      display_width = result.rendered.width,
+    } or nil,
   }
 end
 

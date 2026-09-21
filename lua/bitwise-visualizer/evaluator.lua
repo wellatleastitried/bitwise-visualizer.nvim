@@ -54,6 +54,22 @@ function M.count_nodes(node)
   return n
 end
 
+--- Depth of the IR tree, counting the node itself. A bare literal has depth 1.
+---@param node table
+---@return integer
+function M.tree_depth(node)
+  if type(node) ~= "table" then
+    return 0
+  end
+  local deepest = 0
+  for _, key in ipairs({ "left", "right", "operand", "inner" }) do
+    if node[key] then
+      deepest = math.max(deepest, M.tree_depth(node[key]))
+    end
+  end
+  return 1 + deepest
+end
+
 ---@param dst table
 ---@param src table|nil
 local function merge_notes(dst, src)
