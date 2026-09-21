@@ -106,6 +106,7 @@ All output below is produced by the plugin itself.
 & 0000 1100  (12)
   ─────────
   0000 1000  (8)
+  32-bit signed value, showing the low 8 bits (24 bits of zero extension hidden)
 ```
 
 **Partially known values**: `x = flags & 0x0F;`
@@ -115,7 +116,7 @@ All output below is produced by the plugin itself.
 & 0000 1111  0x0F  (15)
   ─────────
   0000 ????  flags & 0x0F
-  32-bit signed value, showing the low 8 bits
+  32-bit signed value, showing the low 8 bits (24 bits of unknown bits and zero extension hidden)
 ```
 
 **Shifts**: `x = 10 << 2;`
@@ -408,8 +409,10 @@ value that a human reader could disprove.
 * `width = "auto"` evaluates using the language's natural integer width (32 for
   C/Rust/Java/JS, 64 for Go/Lua/Python), promoted by literal suffixes such as
   `1ULL` or `255u8`. The *display* then shrinks to the smallest of
-  `display_widths` that hides nothing but redundant sign/zero extension. When
-  unknown high bits are hidden, a note says so.
+  `display_widths` that loses no information, and a note explains what the
+  hidden bits are: redundant **sign extension**, redundant **zero extension**,
+  or genuinely **unknown bits**, whichever applies. Set `show_notes = false`
+  to hide it.
 * `width = 8 | 16 | 32 | 64` forces both evaluation and display.
 * Signedness comes from the language and from literal suffixes; a single
   unsigned literal makes the expression unsigned, mirroring C's usual arithmetic
