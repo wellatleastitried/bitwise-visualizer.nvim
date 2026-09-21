@@ -160,7 +160,8 @@ as `?` and propagate through every operator (`0 & ? = 0`, `1 | ? = 1`,
 
 With `width = "auto"` the expression is evaluated at the language's natural
 width (promoted by literal suffixes such as 1ULL or 255u8) and displayed at
-the smallest width that hides only redundant sign or zero extension.
+the smallest width that loses no information. A note explains what the
+hidden bits are: sign extension, zero extension, unknown bits, or a mix.
 
 Right shifts are arithmetic for signed values in C, Rust, Go and Java, and
 logical in Lua. Shifts of at least the operand width are treated as undefined

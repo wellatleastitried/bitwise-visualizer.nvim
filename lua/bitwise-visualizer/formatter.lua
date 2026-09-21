@@ -329,24 +329,45 @@ function M.format(node, cfg)
   for _, n in ipairs(node.notes or {}) do
     notes[#notes + 1] = n
   end
-  -- Hiding redundant sign/zero extension needs no explanation, but hiding
-  -- *unknown* high bits does: say so rather than implying a narrow value.
+  -- The display window can hide real information (this expression is wider
+  -- than what is shown), so always say so: what differs is *why* the hidden
+  -- bits carry no extra information, sign/zero extension or genuine unknowns.
   if width < eval_width then
-    local hides_unknown = false
+    local hidden = eval_width - width
+    local has_zero, has_one, has_unknown = false, false, false
     for _, v in ipairs(values) do
-      for i = width + 1, v.width do
-        if v:get(i) == bits.U then
-          hides_unknown = true
-          break
+      if width < v.width then
+        local ext = v:get(width + 1)
+        if ext == bits.U then
+          has_unknown = true
+        elseif ext == 1 then
+          has_one = true
+        else
+          has_zero = true
         end
       end
     end
-    if hides_unknown then
+    local reasons = {}
+    if has_unknown then
+      reasons[#reasons + 1] = "unknown bits"
+    end
+    if has_one and has_zero then
+      reasons[#reasons + 1] = "sign/zero extension"
+    elseif has_one then
+      reasons[#reasons + 1] = "sign extension"
+    elseif has_zero then
+      reasons[#reasons + 1] = "zero extension"
+    end
+    if #reasons > 0 then
       notes[#notes + 1] = string.format(
-        "%d-bit %s value, showing the low %d bits",
+        "%d-bit %s value, showing the low %d bit%s (%d %s of %s hidden)",
         eval_width,
         node.value.signed and "signed" or "unsigned",
-        width
+        width,
+        width == 1 and "" or "s",
+        hidden,
+        hidden == 1 and "bit" or "bits",
+        table.concat(reasons, " and ")
       )
     end
   end
