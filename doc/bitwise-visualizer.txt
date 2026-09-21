@@ -107,7 +107,10 @@ Configuration may also be provided before the plugin loads via the dictionary
 :BitwiseVisualizerWidth {w}   Set the bit width: auto, 8, 16, 32 or 64.
 
                                                     *:BitwiseVisualizerStatus*
-:BitwiseVisualizerStatus      Show diagnostics for the current position.
+:BitwiseVisualizerStatus      Show diagnostics for the current position,
+                              including a `metrics` table (`nodes`, `depth`,
+                              `max_nodes`, `eval_width`, `display_width`)
+                              describing the analysed expression.
 
                                                      *:BitwiseVisualizerReset*
 :BitwiseVisualizerReset       Restore the default configuration.

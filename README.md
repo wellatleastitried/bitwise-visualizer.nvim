@@ -461,6 +461,26 @@ bv.status()
 require("bitwise-visualizer.renderer").register_backend("my_mode", fn)
 ```
 
+`status()` also reports the complexity of the expression under the cursor, so
+you can see how close it is to `max_nodes` and which width was actually used:
+
+```lua
+{
+  expression = "10 & 12",
+  status = "known",
+  metrics = {
+    nodes = 3,           -- IR nodes in the expression
+    max_nodes = 32,       -- current max_nodes limit
+    depth = 2,            -- deepest nesting level
+    eval_width = 32,       -- bits the value was evaluated at
+    display_width = 8,     -- bits actually shown
+  },
+  -- ...
+}
+```
+
+`metrics` is `nil` whenever nothing is visualized (see `reason`).
+
 Suggested mapping:
 
 ```lua
