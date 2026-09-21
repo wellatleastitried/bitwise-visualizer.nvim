@@ -49,6 +49,15 @@ function M.create()
     bv.hide()
   end, { desc = "Clear the visualization in the current buffer" })
 
+  cmd("BitwiseVisualizerCopy", function(opts)
+    local copied, result = bv.copy({ header = opts.bang })
+    if not copied then
+      vim.notify("[bitwise-visualizer] " .. (result or "nothing to copy"), vim.log.levels.WARN)
+      return
+    end
+    vim.notify('[bitwise-visualizer] copied to the "+ register', vim.log.levels.INFO)
+  end, { bang = true, desc = "Copy the visualization under the cursor (! prefixes a file:line header)" })
+
   cmd("BitwiseVisualizerWidth", function(opts)
     local arg = vim.trim(opts.args)
     local width = arg == "auto" and "auto" or tonumber(arg)

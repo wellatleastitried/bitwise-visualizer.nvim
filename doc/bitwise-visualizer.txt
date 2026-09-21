@@ -103,6 +103,11 @@ Configuration may also be provided before the plugin loads via the dictionary
                                                       *:BitwiseVisualizerHide*
 :BitwiseVisualizerHide        Clear the current buffer's visualization.
 
+                                                      *:BitwiseVisualizerCopy*
+:BitwiseVisualizerCopy        Copy the visualization at the cursor to the
+                              `"+` register.
+:BitwiseVisualizerCopy!       Copy it with a `file:line` header prepended.
+
                                                      *:BitwiseVisualizerWidth*
 :BitwiseVisualizerWidth {w}   Set the bit width: auto, 8, 16, 32 or 64.
 
@@ -116,6 +121,10 @@ Configuration may also be provided before the plugin loads via the dictionary
 they never disagree about whether anything is following the cursor. For a
 permanently manual-only setup, set `auto = false` in |bitwise-visualizer-configuration|
 and use `show()`/`hide()` instead, which work regardless of `enabled`/`auto`.
+
+`:BitwiseVisualizerCopy` writes to the `"+` register; pasting into another
+application needs a system clipboard provider (`xclip`, `wl-clipboard`,
+`pbcopy`, ...), see |clipboard|.
 
 ==============================================================================
 5. LUA API                                             *bitwise-visualizer-api*
@@ -132,6 +141,7 @@ and use `show()`/`hide()` instead, which work regardless of `enabled`/`auto`.
     bv.hide()
     bv.refresh()
     bv.render_text(overrides)   -- string[] of the visualization
+    bv.copy(opts)               -- copy it to a register: { register, header }
     bv.analyze(buf, row, col, overrides)  -- analysis without drawing
     bv.is_enabled()
     bv.status()
